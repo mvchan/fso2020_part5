@@ -3,18 +3,15 @@ import Blog from './components/Blog'
 import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login' 
+import LoginForm from './components/LoginForm'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Togglable'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [normalMessage, setNormalMessage] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('') 
+  const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setURL] = useState('')
 
   //empty array will result in only executing once on first-time render
   useEffect(() => {
@@ -33,25 +30,17 @@ const App = () => {
     }
   }, [])
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
-    console.log('logging in with', username, password)  
-
+  const handleLogin = async (loginObject) => {
     try {
-      const user = await loginService.login({
-        username,
-        password
-      })
+      const user = await loginService.login(loginObject)
 
       //allows login to persist on re-render
       window.localStorage.setItem(
         'loggedBlogAppUser', JSON.stringify(user)
       ) 
-
+      
       blogService.setToken(user.token)
       setUser(user)
-      setUsername('')
-      setPassword('')
     } catch (exception) {
       setErrorMessage('wrong username or password')
       setTimeout(() => {
@@ -60,16 +49,9 @@ const App = () => {
     }
   }
 
-  const handleBlogCreation = async (event) => {
-    event.preventDefault()
-    console.log('adding a new blog')
-
+  const handleBlogCreation = async (blogObject) => {
     try {
-      const blog = await blogService.create({
-        title,
-        author,
-        url
-      })
+      const blog = await blogService.create(blogObject)
       setBlogs(blogs.concat(blog))
       setNormalMessage(`a new blog titled '${blog.title}' by ${blog.author} has been added`)
       setTimeout(() => {
@@ -84,40 +66,28 @@ const App = () => {
   }
 
   const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        username
-          <input type="text" value={username} name="Username" onChange={({ target }) => setUsername(target.value)} />
-      </div>
-      <div>
-        password
-          <input type="password" value={password} name="Password" onChange={({ target }) => setPassword(target.value)} />
-      </div>
-      <button type="submit">login</button>
-    </form>
+    <Togglable buttonLabel='login'>
+      <LoginForm initiateLogin={handleLogin} />
+    </Togglable>
   )
 
   const blogForm = () => (
-    <form onSubmit={handleBlogCreation}>
-        <div>title: <input value={title} onChange={({target}) => setTitle(target.value)} /></div>
-        <div>author: <input value={author} onChange={({target}) => setAuthor(target.value)} /></div>
-        <div>url: <input value={url} onChange={({target}) => setURL(target.value)} /></div>
-        <div><button type="submit">create</button></div>
-    </form>
+    <Togglable buttonLabel="new blog">
+      <BlogForm createBlog={handleBlogCreation} />
+    </Togglable>
   )
 
   return (
     <div>
+      <h2>Blogs</h2>
       {user === null 
         ?
         <div>
-          <h2>log in to application</h2>
           <Notification message={errorMessage} isError={true} />
           {loginForm()}
         </div> 
         :
         <div>
-          <h2>blogs</h2>
           <Notification message={normalMessage} isError={false} />
           <Notification message={errorMessage} isError={true} />
           <p>{user.name} logged in 
@@ -128,7 +98,6 @@ const App = () => {
                 }>logout
               </button>
           </p>
-          <h2>create new</h2>
           {blogForm()}
           {blogs.filter(blog => blog.user.username === user.username).map(blog => <Blog key={blog.id} blog={blog} />)}
         </div>

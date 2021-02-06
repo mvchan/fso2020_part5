@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import Notification from './components/Notification'
 import blogService from './services/blogs'
@@ -12,6 +12,8 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState(null)
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
+
+  const blogFormRef = useRef()
 
   //empty array will result in only executing once on first-time render
   useEffect(() => {
@@ -52,6 +54,7 @@ const App = () => {
   const handleBlogCreation = async (blogObject) => {
     try {
       const blog = await blogService.create(blogObject)
+      blogFormRef.current.toggleVisibility()
       setBlogs(blogs.concat(blog))
       setNormalMessage(`a new blog titled '${blog.title}' by ${blog.author} has been added`)
       setTimeout(() => {
@@ -65,6 +68,17 @@ const App = () => {
     }
   }
 
+  const handleLikeUpdate = async (id, blogObject) => {
+    try {
+      await blogService.update(id,blogObject)
+    } catch (exception) {
+      setErrorMessage('Could not like blog')
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+    }
+  }
+
   const loginForm = () => (
     <Togglable buttonLabel='login'>
       <LoginForm initiateLogin={handleLogin} />
@@ -72,7 +86,7 @@ const App = () => {
   )
 
   const blogForm = () => (
-    <Togglable buttonLabel="new blog">
+    <Togglable buttonLabel='create new blog' ref={blogFormRef}>
       <BlogForm createBlog={handleBlogCreation} />
     </Togglable>
   )
@@ -99,7 +113,7 @@ const App = () => {
               </button>
           </p>
           {blogForm()}
-          {blogs.filter(blog => blog.user.username === user.username).map(blog => <Blog key={blog.id} blog={blog} />)}
+          {blogs.filter(blog => blog.user.username === user.username).map(blog => <Blog key={blog.id} blog={blog} sendLike={handleLikeUpdate} />)}
         </div>
       }
     </div>

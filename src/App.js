@@ -19,7 +19,7 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
 
   //empty array will result in only executing once on first-time render
@@ -68,9 +68,12 @@ const App = () => {
     }
   }
 
+  //setBlogs will not refresh the component without the filter in this situation (sort does not trigger it)
   const handleLikeUpdate = async (id, blogObject) => {
     try {
       await blogService.update(id,blogObject)
+      blogs[blogs.findIndex(blog => blog.id === id)].likes = blogObject.likes
+      setBlogs(blogs.filter(blog => blog.user.username === user.username))
     } catch (exception) {
       setErrorMessage('Could not like blog')
       setTimeout(() => {
@@ -113,7 +116,7 @@ const App = () => {
               </button>
           </p>
           {blogForm()}
-          {blogs.filter(blog => blog.user.username === user.username).map(blog => <Blog key={blog.id} blog={blog} sendLike={handleLikeUpdate} />)}
+          {blogs.filter(blog => blog.user.username === user.username).sort((a,b) => a.likes - b.likes).sort((x,y) => x.title.toLowerCase() - y.title.toLowerCase()).map(blog => <Blog key={blog.id} blog={blog} sendLike={handleLikeUpdate} />)}
         </div>
       }
     </div>

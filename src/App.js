@@ -68,12 +68,9 @@ const App = () => {
     }
   }
 
-  //setBlogs will not refresh the component without the filter in this situation (sort does not trigger it)
   const handleLikeUpdate = async (id, blogObject) => {
     try {
       await blogService.update(id,blogObject)
-      blogs[blogs.findIndex(blog => blog.id === id)].likes = blogObject.likes
-      setBlogs(blogs.filter(blog => blog.user.username === user.username))
     } catch (exception) {
       setErrorMessage('Could not like blog')
       setTimeout(() => {

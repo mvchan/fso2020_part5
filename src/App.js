@@ -7,6 +7,8 @@ import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
 
+import { cloneDeep } from "lodash"
+
 const App = () => {
   const [normalMessage, setNormalMessage] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
@@ -68,11 +70,41 @@ const App = () => {
     }
   }
 
-  const handleLikeUpdate = async (id, blogObject) => {
+  const handleLikeOperation = async (id, blogObject) => {
     try {
       await blogService.update(id,blogObject)
+
+      //deep copy from lodash needed to maintain proper React state usage by manipulating a copy instead
+      const blogsCopy = cloneDeep(blogs)
+      blogsCopy[blogsCopy.findIndex(a => a.id === id)].likes = blogObject.likes
+      setBlogs(blogsCopy)
+
     } catch (exception) {
       setErrorMessage('Could not like blog')
+      setTimeout(() => {
+        setErrorMessage(null)
+      }, 5000)
+    }
+  }
+
+  const handleDeleteOperation = async (blog) => {
+    try {
+      if (!window.confirm(`Remove blog '${blog.title}' by ${blog.author}?`))
+        return
+
+      await blogService.remove(blog.id)
+
+      //deep copy from lodash needed to maintain proper React state usage by manipulating a copy instead
+      const blogsCopy = cloneDeep(blogs)
+      blogsCopy.splice(blogsCopy.findIndex(a => a.id === blog.id),1)
+      setBlogs(blogsCopy)
+
+      setNormalMessage(`the blog titled '${blog.title}' by ${blog.author} has been deleted`)
+      setTimeout(() => {
+        setNormalMessage(null)
+      }, 5000)
+    } catch (exception) {
+      setErrorMessage('Could not delete blog')
       setTimeout(() => {
         setErrorMessage(null)
       }, 5000)
@@ -113,7 +145,9 @@ const App = () => {
               </button>
           </p>
           {blogForm()}
-          {blogs.sort((a,b) => a.likes - b.likes).sort((x,y) => x.title.toLowerCase() - y.title.toLowerCase()).map(blog => <Blog key={blog.id} blog={blog} sendLike={handleLikeUpdate} />)}
+          {blogs.sort((a,b) => a.likes - b.likes)
+                .sort((x,y) => x.title.toLowerCase() - y.title.toLowerCase())
+                .map(blog => <Blog key={blog.id} blog={blog} user={user} likeOperation={handleLikeOperation} deleteOperation={handleDeleteOperation} />)}
         </div>
       }
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-const Blog = ({ blog, sendLike }) => {
+const Blog = ({ blog, user, likeOperation, deleteOperation }) => {
   const [visible, setVisible] = useState(false)
   const [likeCount, setLikeCount] = useState(blog.likes)
 
@@ -11,9 +11,8 @@ const Blog = ({ blog, sendLike }) => {
   }
 
   //using async/await in order to synchronize likes being shown with actual like count
-  const addLike = async () => {
-    
-    await sendLike(blog.id,{
+  const likeBlog = async () => {
+    await likeOperation(blog.id,{
       title: blog.title,
       author: blog.author,
       url: blog.url,
@@ -22,6 +21,10 @@ const Blog = ({ blog, sendLike }) => {
     })
 
     setLikeCount(likeCount+1)
+  }
+
+  const deleteBlog = async () => {
+     await deleteOperation(blog)
   }
 
   const blogStyle = {
@@ -40,8 +43,12 @@ const Blog = ({ blog, sendLike }) => {
       <div style={hide}>  
         {blog.title} {blog.author} <button onClick={toggleVisibility}>hide</button><br/>
         {blog.url}<br/>
-        likes {likeCount} <button onClick={addLike}>like</button><br/>
+        likes {likeCount} <button onClick={likeBlog}>like</button><br/>
         {blog.user.name}<br/>
+        {blog.user.username === user.username
+          ? <button onClick={deleteBlog}>delete</button> 
+          : null
+        }
       </div>
     </div>
   )

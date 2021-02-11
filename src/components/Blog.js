@@ -36,16 +36,16 @@ const Blog = ({ blog, user, likeOperation, deleteOperation }) => {
     }
 
     return (
-        <div className='blog' style={blogStyle}>
-            <div style={view}>
+        <div style={blogStyle}>
+            <div className='blogView' style={view}>
                 {blog.title} {blog.author} <button onClick={toggleVisibility}>view</button>
             </div>
-            <div style={hide}>
+            <div className='blogHide' style={hide}>
                 {blog.title} {blog.author} <button onClick={toggleVisibility}>hide</button><br/>
                 {blog.url}<br/>
-        likes {likeCount} <button onClick={likeBlog}>like</button><br/>
+                likes {likeCount} <button onClick={likeBlog}>like</button><br/>
                 {blog.user.name}<br/>
-                {blog.user.username === user.username
+                {(user && blog.user.username === user.username)
                     ? <button onClick={deleteBlog}>delete</button>
                     : null
                 }

@@ -5,8 +5,9 @@ import { prettyDOM } from '@testing-library/dom'
 import Blog from './Blog'
 import BlogForm from './BlogForm'
 import Togglable from './Togglable'
+import { act } from 'react-dom/test-utils'
 
-test('renders content', () => {
+test('by default, only the blog\'s title and author are displayed', () => {
     const blog = {
         title: 'Component testing is done with react-testing-library',
         author: 'Jest',
@@ -15,8 +16,12 @@ test('renders content', () => {
         user: 'testing'
     }
 
+    const user = {
+        username: 'jestTestUser'
+    }
+
     const component = render(
-        <Blog blog={blog} />
+        <Blog blog={blog} user={user} />
     )
 
     //const divComp = component.container.querySelector('div')
@@ -32,14 +37,16 @@ test('renders content', () => {
     const blogViewDiv = component.container.querySelector('.blogView')
     expect(blogViewDiv).not.toHaveStyle('display: none')
     expect(blogViewDiv).not.toHaveTextContent('likes')
+    expect(blogViewDiv).not.toHaveTextContent('url')
 
     const blogHideDiv = component.container.querySelector('.blogHide')
     expect(blogHideDiv).toHaveStyle('display: none')
     expect(blogHideDiv).toHaveTextContent('likes')
+    expect(blogHideDiv).toHaveTextContent('url')
 
     // method 2
     //const element = component.getByText(
-    //    'Component testing is done with react-testing-library'
+    //    /Component testing is done with react-testing-library/
     //)
     //expect(element).toBeDefined()
 
@@ -50,8 +57,40 @@ test('renders content', () => {
     //)
 })
 
-/*
-test('clicking the view button calls event handler once', () => {
+test('clicking the view button displays url and likes', () => {
+    const blog = {
+        title: 'Component testing is done with react-testing-library',
+        author: 'Jest',
+        url: 'test.url',
+        likes: '989',
+        user: {
+            username: 'jestTestUser'
+        }
+    }
+
+    const user = {
+        username: 'jestTestUser'
+    }
+
+    const component = render(
+        <Blog blog={blog} user={user} />
+    )
+
+    const button = component.container.querySelector('.view')
+    fireEvent.click(button)
+
+    const blogViewDiv = component.container.querySelector('.blogView')
+    expect(blogViewDiv).toHaveStyle('display: none')
+    expect(blogViewDiv).not.toHaveTextContent('likes')
+    expect(blogViewDiv).not.toHaveTextContent('url')
+
+    const blogHideDiv = component.container.querySelector('.blogHide')
+    expect(blogHideDiv).not.toHaveStyle('display: none')
+    expect(blogHideDiv).toHaveTextContent('likes')
+    expect(blogHideDiv).toHaveTextContent('url')
+})
+
+test('clicking the like button twice calls mock event handler twice', () => {
     const blog = {
         title: 'Component testing is done with react-testing-library',
         author: 'Jest',
@@ -69,15 +108,20 @@ test('clicking the view button calls event handler once', () => {
     const mockHandler = jest.fn()
 
     const component = render(
-        <Blog blog={blog} user={user} likeOperation={mockHandler} deleteOperation={mockHandler} />
+        <Blog blog={blog} user={user} likeOperation={mockHandler} />
     )
 
-    const button = component.getByText('view')
-    fireEvent.click(button)
+    const button = component.container.querySelector('.like')
 
-    expect(mockHandler.mock.calls).toHaveLength(1)
+    act(() => {
+        fireEvent.click(button)
+        fireEvent.click(button)
+    })
+
+    expect(mockHandler.mock.calls).toHaveLength(2)
 })
 
+/*
 describe('<Togglable />', () => {
     let component
 

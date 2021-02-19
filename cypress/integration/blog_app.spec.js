@@ -48,4 +48,17 @@ describe('Blog app', function() {
             cy.contains('cypress blog title')
         })
     })
+
+    it.only('login fails with wrong password', function() {
+        cy.contains('login').click()
+        cy.get('#username').type('mac10')
+        cy.get('#password').type('pass456')
+        cy.get('#login-button').click()
+
+        cy.get('.error').should('contain', 'wrong username or password')
+            .and('have.css', 'color', 'rgb(255, 0, 0)')
+            .and('have.css', 'border-style', 'solid')
+
+        cy.get('html').should('not.contain', 'Mark logged in')
+    })
 })

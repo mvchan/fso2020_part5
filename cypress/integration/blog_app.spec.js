@@ -33,10 +33,14 @@ describe('Blog app', function() {
 
     describe('when logged in', function() {
         beforeEach(function() {
+            /*
             cy.contains('login').click()
             cy.get('input:first').type('mac10')
             cy.get('input:last').type('pass456')
             cy.get('#login-button').click()
+            */
+
+            cy.login({ username: 'mac10', password: 'pass456' })
         })
 
         it('a new blog can be created', function() {

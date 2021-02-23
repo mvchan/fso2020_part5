@@ -40,6 +40,85 @@ describe('Blog app', function() {
         })
     })
 
+    describe('When logged in', function() {
+        beforeEach(function() {
+
+            // cy.contains('login').click()
+            // cy.get('input:first').type('mac10test')
+            // cy.get('input:last').type('pass456test')
+            // cy.get('#login-button').click()
+
+            //bypass method
+            cy.login({ username: 'mac10test', password: 'pass456test' })
+        })
+
+        it('A blog can be created', function() {
+
+            cy.contains('create new blog').click()
+            cy.get('#title').type('cypress blog title')
+            cy.get('#author').type('cypress blog author')
+            cy.get('#url').type('cypress blog url')
+            cy.get('#create-button').click()
+
+            cy.contains('cypress blog title')
+            cy.get('.error').should('contain', 'has been added')
+                .and('have.css', 'color', 'rgb(0, 128, 0)')
+                .and('have.css', 'border-style', 'solid')
+        })
+
+        it('A blog can be liked', function() {
+            //bypass method
+            cy.createBlog({
+                title:'cypress blog title for like test',
+                author:'cypress blog author for like test',
+                url:'cypress blog url for like test'
+            })
+            cy.get('.view').click()
+            cy.get('.like').click()
+            cy.contains('likes: 1')
+        })
+
+        it('A blog CAN be deleted by the original user', function() {
+            cy.createBlog({
+                title:'cypress blog title for delete test',
+                author:'cypress blog author for delete test',
+                url:'cypress blog url for delete test'
+            })
+
+            cy.get('#blog-list').should('contain','cypress blog title for delete test')
+
+            cy.get('.view').click()
+            cy.get('.delete').should('exist').click()
+
+            cy.get('.error').should('contain', 'has been deleted')
+                .and('have.css', 'color', 'rgb(0, 128, 0)')
+                .and('have.css', 'border-style', 'solid')
+
+            cy.get('#blog-list').should('not.contain','cypress blog title for delete test')
+        })
+
+        it('A blog CANNOT be deleted by any other user', function() {
+            cy.createBlog({
+                title:'cypress blog title for delete test',
+                author:'cypress blog author for delete test',
+                url:'cypress blog url for delete test'
+            })
+
+            const user = {
+                name: 'Another User',
+                username: 'other',
+                password: 'other'
+            }
+            cy.request('POST', 'http://localhost:3001/api/users/', user)
+
+            cy.login({ username: 'other', password: 'other' })
+
+            cy.get('#blog-list').should('contain','cypress blog title for delete test')
+            cy.get('.view').click()
+            cy.get('.delete').should('not.exist')
+        })
+    })
+
     // it('login form can be opened', function() {
     //     cy.visit('http://localhost:3000')
     //     cy.contains('login').click()
@@ -53,34 +132,7 @@ describe('Blog app', function() {
     //     cy.contains('Mark logged in')
     // })
 
-    // describe('when logged in', function() {
-    //     beforeEach(function() {
-    //         /*
-    //         cy.contains('login').click()
-    //         cy.get('input:first').type('mac10')
-    //         cy.get('input:last').type('pass456')
-    //         cy.get('#login-button').click()
-    //         */
 
-    //         cy.login({ username: 'mac10', password: 'pass456' })
-    //     })
-
-    //     it('a new blog can be created', function() {
-    //         /*
-    //         cy.contains('create new blog').click()
-    //         cy.get('#title').type('cypress blog title')
-    //         cy.get('#author').type('cypress blog author')
-    //         cy.get('#url').type('cypress blog url')
-    //         cy.contains('create').click()
-    //         cy.contains('cypress blog title')
-    //         */
-    //         cy.createBlog({
-    //             title:'cypress blog title',
-    //             author:'cypress blog author',
-    //             url:'cypress blog url'
-    //         })
-    //     })
-    // })
 
     // it.only('login fails with wrong password', function() {
     //     cy.contains('login').click()

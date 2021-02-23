@@ -144,9 +144,11 @@ const App = () => {
                         </button>
                     </p>
                     {blogForm()}
-                    {blogs.sort((a,b) => a.likes - b.likes)
-                        .sort((x,y) => x.title.toLowerCase() - y.title.toLowerCase())
-                        .map(blog => <Blog key={blog.id} blog={blog} user={user} likeOperation={handleLikeOperation} deleteOperation={handleDeleteOperation} />)}
+                    <div id='blog-list'>
+                        {blogs.sort((a,b) => a.likes - b.likes)
+                            .sort((x,y) => x.title.toLowerCase() - y.title.toLowerCase())
+                            .map(blog => <Blog key={blog.id} blog={blog} user={user} likeOperation={handleLikeOperation} deleteOperation={handleDeleteOperation} />)}
+                    </div>
                 </div>
             }
         </div>
